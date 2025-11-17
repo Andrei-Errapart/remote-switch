@@ -6,6 +6,9 @@ pub fn build(b: *std.Build) void {
         .preferred_optimize_mode = .ReleaseSmall,
     });
 
+    // Force ReleaseSmall for this embedded target if no option specified
+    const actual_optimize = if (optimize == .Debug) .ReleaseSmall else optimize;
+
     const target = b.resolveTargetQuery(.{
         .cpu_arch = .thumb,
         .os_tag = .freestanding,
@@ -18,7 +21,7 @@ pub fn build(b: *std.Build) void {
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),
             .target = target,
-            .optimize = optimize,
+            .optimize = actual_optimize,
         }),
     });
 
@@ -30,7 +33,7 @@ pub fn build(b: *std.Build) void {
 
     // Disable stack protector for embedded
     exe.root_module.stack_protector = false;
-    
+
     // Strip symbols for smaller binary
     exe.root_module.strip = true;
 
